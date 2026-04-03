@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useChats } from '../hooks/useChats';
 import { Plus, Trash2, Pencil, Check, X, MessageSquare } from 'lucide-react';
 

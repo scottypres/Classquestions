@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import MarkdownRenderer from './MarkdownRenderer';
 import type { ProviderResponse } from '../types';
 import { Loader2 } from 'lucide-react';

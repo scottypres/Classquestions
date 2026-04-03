@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -34,60 +34,61 @@ interface Props {
 
 export default function MarkdownRenderer({ content }: Props) {
   return (
-    <ReactMarkdown
-      remarkPlugins={[remarkGfm, remarkMath]}
-      rehypePlugins={[rehypeKatex]}
-      className="prose prose-invert max-w-none prose-pre:bg-gray-900 prose-pre:p-0"
-      components={{
-        code({ className, children, ...props }) {
-          const match = /language-(\w+)/.exec(className || '');
-          const codeStr = String(children).replace(/\n$/, '');
+    <div className="prose prose-invert max-w-none prose-pre:bg-gray-900 prose-pre:p-0">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm, remarkMath]}
+        rehypePlugins={[rehypeKatex]}
+        components={{
+          code({ className, children, ...props }) {
+            const match = /language-(\w+)/.exec(className || '');
+            const codeStr = String(children).replace(/\n$/, '');
 
-          if (match && match[1] === 'mermaid') {
-            return <MermaidBlock code={codeStr} />;
-          }
+            if (match && match[1] === 'mermaid') {
+              return <MermaidBlock code={codeStr} />;
+            }
 
-          if (match) {
+            if (match) {
+              return (
+                <SyntaxHighlighter
+                  style={oneDark}
+                  language={match[1]}
+                  PreTag="div"
+                  className="rounded-lg text-sm"
+                >
+                  {codeStr}
+                </SyntaxHighlighter>
+              );
+            }
+
             return (
-              <SyntaxHighlighter
-                style={oneDark}
-                language={match[1]}
-                PreTag="div"
-                className="rounded-lg text-sm"
-              >
-                {codeStr}
-              </SyntaxHighlighter>
+              <code className="bg-gray-800 px-1.5 py-0.5 rounded text-sm" {...props}>
+                {children}
+              </code>
             );
-          }
-
-          return (
-            <code className="bg-gray-800 px-1.5 py-0.5 rounded text-sm" {...props}>
-              {children}
-            </code>
-          );
-        },
-        table({ children }) {
-          return (
-            <div className="overflow-x-auto my-4">
-              <table className="min-w-full border border-gray-700">{children}</table>
-            </div>
-          );
-        },
-        th({ children }) {
-          return (
-            <th className="border border-gray-700 bg-gray-800 px-3 py-2 text-left">
-              {children}
-            </th>
-          );
-        },
-        td({ children }) {
-          return (
-            <td className="border border-gray-700 px-3 py-2">{children}</td>
-          );
-        },
-      }}
-    >
-      {content}
-    </ReactMarkdown>
+          },
+          table({ children }) {
+            return (
+              <div className="overflow-x-auto my-4">
+                <table className="min-w-full border border-gray-700">{children}</table>
+              </div>
+            );
+          },
+          th({ children }) {
+            return (
+              <th className="border border-gray-700 bg-gray-800 px-3 py-2 text-left">
+                {children}
+              </th>
+            );
+          },
+          td({ children }) {
+            return (
+              <td className="border border-gray-700 px-3 py-2">{children}</td>
+            );
+          },
+        }}
+      >
+        {content}
+      </ReactMarkdown>
+    </div>
   );
 }

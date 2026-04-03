@@ -1,4 +1,3 @@
-import React from 'react';
 import { useChatStore } from '../stores/chatStore';
 import ResponsePanel from './ResponsePanel';
 import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';

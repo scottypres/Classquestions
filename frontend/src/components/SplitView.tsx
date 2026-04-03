@@ -1,4 +1,4 @@
-import React from 'react';
+import { Fragment } from 'react';
 import { Group, Panel, Separator } from 'react-resizable-panels';
 import { useChatStore } from '../stores/chatStore';
 import ResponsePanel from './ResponsePanel';
@@ -13,9 +13,9 @@ export default function SplitView() {
   const { responses } = useChatStore();
 
   return (
-    <Group direction="vertical" className="h-full">
+    <Group orientation="vertical" className="h-full">
       {PANELS.map(({ id, label, color }, idx) => (
-        <React.Fragment key={id}>
+        <Fragment key={id}>
           {idx > 0 && (
             <Separator className="h-1.5 bg-gray-700 hover:bg-gray-500 transition-colors cursor-row-resize" />
           )}
@@ -29,7 +29,7 @@ export default function SplitView() {
               </div>
             </div>
           </Panel>
-        </React.Fragment>
+        </Fragment>
       ))}
     </Group>
   );

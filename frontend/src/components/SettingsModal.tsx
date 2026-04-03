@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useChatStore } from '../stores/chatStore';
 import { fetchModels } from '../api/client';
 import type { ModelOption } from '../types';

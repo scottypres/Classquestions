@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback, type KeyboardEvent } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useChatStore } from '../stores/chatStore';
 import { useStreamingQuery } from '../hooks/useStreamingQuery';
@@ -15,8 +15,6 @@ export default function PromptInput() {
     setUploadedFiles,
     isQuerying,
     activeChatId,
-    responses,
-    classQuestionsMode,
   } = useChatStore();
   const { send, cancel } = useStreamingQuery();
   const { create } = useChats();
@@ -77,7 +75,7 @@ export default function PromptInput() {
     }, 500);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
