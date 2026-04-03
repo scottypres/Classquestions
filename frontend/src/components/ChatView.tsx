@@ -114,7 +114,7 @@ export default function ChatView() {
       {classQuestionsMode && <ClassQuestionsSummary />}
 
       {/* Response area */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 min-h-0 overflow-hidden">
         {hasCurrentResponse ? (
           viewMode === 'tabs' ? (
             <ResponseTabs />

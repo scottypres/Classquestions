@@ -8,11 +8,24 @@ interface Props {
   compact?: boolean;
 }
 
-export default function ResponsePanel({ response, compact }: Props) {
+export default function ResponsePanel({ response }: Props) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const userScrolledRef = useRef(false);
 
   useEffect(() => {
-    if (response.status === 'streaming') {
+    const el = containerRef.current;
+    if (!el) return;
+    const handleScroll = () => {
+      const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+      userScrolledRef.current = !atBottom;
+    };
+    el.addEventListener('scroll', handleScroll);
+    return () => el.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    if (response.status === 'streaming' && !userScrolledRef.current) {
       bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [response.content, response.status]);
@@ -26,7 +39,10 @@ export default function ResponsePanel({ response, compact }: Props) {
   }
 
   return (
-    <div className={`overflow-y-auto ${compact ? 'h-full' : 'flex-1'} p-4`}>
+    <div
+      ref={containerRef}
+      className="h-full overflow-y-auto overscroll-contain p-4"
+    >
       {response.status === 'streaming' && !response.content && (
         <div className="flex items-center gap-2 text-gray-400">
           <Loader2 className="w-4 h-4 animate-spin" />
