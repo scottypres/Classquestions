@@ -1,7 +1,5 @@
-import anthropic
 import base64
 from typing import AsyncGenerator
-from config import ANTHROPIC_API_KEY
 from services.llm_base import LLMService
 
 DEFAULT_MODEL = "claude-sonnet-4-20250514"
@@ -9,12 +7,21 @@ DEFAULT_MODEL = "claude-sonnet-4-20250514"
 
 class AnthropicService(LLMService):
     def __init__(self):
-        self.client = anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY) if ANTHROPIC_API_KEY else None
+        self._client = None
+
+    def _get_client(self):
+        if self._client is None:
+            from config import ANTHROPIC_API_KEY
+            if ANTHROPIC_API_KEY:
+                import anthropic
+                self._client = anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
+        return self._client
 
     async def stream_response(
         self, prompt: str, model: str = None, files: list[dict] = None
     ) -> AsyncGenerator[str, None]:
-        if not self.client:
+        client = self._get_client()
+        if not client:
             yield "[Error: ANTHROPIC_API_KEY not configured]"
             return
 
@@ -45,7 +52,7 @@ class AnthropicService(LLMService):
         messages_content.append({"type": "text", "text": prompt})
 
         try:
-            async with self.client.messages.stream(
+            async with client.messages.stream(
                 model=model,
                 max_tokens=8192,
                 messages=[{"role": "user", "content": messages_content}],
@@ -56,10 +63,11 @@ class AnthropicService(LLMService):
             yield f"\n\n[Error from Claude: {str(e)}]"
 
     async def list_models(self) -> list[dict]:
-        if not self.client:
+        client = self._get_client()
+        if not client:
             return []
         try:
-            response = await self.client.models.list(limit=100)
+            response = await client.models.list(limit=100)
             models = []
             for m in response.data:
                 models.append({"id": m.id, "name": m.display_name or m.id})

@@ -1,7 +1,4 @@
-from google import genai
-from google.genai import types
 from typing import AsyncGenerator
-from config import GOOGLE_API_KEY
 from services.llm_base import LLMService
 
 DEFAULT_MODEL = "gemini-2.0-flash"
@@ -9,15 +6,25 @@ DEFAULT_MODEL = "gemini-2.0-flash"
 
 class GeminiService(LLMService):
     def __init__(self):
-        self.client = genai.Client(api_key=GOOGLE_API_KEY) if GOOGLE_API_KEY else None
+        self._client = None
+
+    def _get_client(self):
+        if self._client is None:
+            from config import GOOGLE_API_KEY
+            if GOOGLE_API_KEY:
+                from google import genai
+                self._client = genai.Client(api_key=GOOGLE_API_KEY)
+        return self._client
 
     async def stream_response(
         self, prompt: str, model: str = None, files: list[dict] = None
     ) -> AsyncGenerator[str, None]:
-        if not self.client:
+        client = self._get_client()
+        if not client:
             yield "[Error: GOOGLE_API_KEY not configured]"
             return
 
+        from google.genai import types
         model = model or DEFAULT_MODEL
         contents = []
 
@@ -35,7 +42,7 @@ class GeminiService(LLMService):
         contents.append(types.Part.from_text(text=prompt))
 
         try:
-            async for chunk in self.client.aio.models.generate_content_stream(
+            async for chunk in client.aio.models.generate_content_stream(
                 model=model,
                 contents=contents,
             ):
@@ -45,11 +52,12 @@ class GeminiService(LLMService):
             yield f"\n\n[Error from Gemini: {str(e)}]"
 
     async def list_models(self) -> list[dict]:
-        if not self.client:
+        client = self._get_client()
+        if not client:
             return []
         try:
             models = []
-            async for m in self.client.aio.models.list():
+            async for m in client.aio.models.list():
                 if "gemini" in m.name.lower():
                     display = m.display_name or m.name.split("/")[-1]
                     model_id = m.name.split("/")[-1] if "/" in m.name else m.name

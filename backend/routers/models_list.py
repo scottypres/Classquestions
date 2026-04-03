@@ -1,20 +1,12 @@
 from fastapi import APIRouter
-from services.anthropic_service import AnthropicService
-from services.openai_service import OpenAIService
-from services.gemini_service import GeminiService
+from routers.query import PROVIDER_MAP
 
 router = APIRouter()
-
-services = {
-    "gemini": GeminiService(),
-    "claude": AnthropicService(),
-    "chatgpt": OpenAIService(),
-}
 
 
 @router.get("/models/{provider}")
 async def get_models(provider: str):
-    svc = services.get(provider)
+    svc = PROVIDER_MAP.get(provider)
     if not svc:
         return {"error": f"Unknown provider: {provider}", "models": []}
     models = await svc.list_models()

@@ -1,7 +1,5 @@
-import openai
 import base64
 from typing import AsyncGenerator
-from config import OPENAI_API_KEY
 from services.llm_base import LLMService
 
 DEFAULT_MODEL = "gpt-4o"
@@ -9,12 +7,21 @@ DEFAULT_MODEL = "gpt-4o"
 
 class OpenAIService(LLMService):
     def __init__(self):
-        self.client = openai.AsyncOpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
+        self._client = None
+
+    def _get_client(self):
+        if self._client is None:
+            from config import OPENAI_API_KEY
+            if OPENAI_API_KEY:
+                import openai
+                self._client = openai.AsyncOpenAI(api_key=OPENAI_API_KEY)
+        return self._client
 
     async def stream_response(
         self, prompt: str, model: str = None, files: list[dict] = None
     ) -> AsyncGenerator[str, None]:
-        if not self.client:
+        client = self._get_client()
+        if not client:
             yield "[Error: OPENAI_API_KEY not configured]"
             return
 
@@ -43,7 +50,7 @@ class OpenAIService(LLMService):
         messages_content.append({"type": "text", "text": prompt})
 
         try:
-            stream = await self.client.chat.completions.create(
+            stream = await client.chat.completions.create(
                 model=model,
                 messages=[{"role": "user", "content": messages_content}],
                 stream=True,
@@ -55,10 +62,11 @@ class OpenAIService(LLMService):
             yield f"\n\n[Error from ChatGPT: {str(e)}]"
 
     async def list_models(self) -> list[dict]:
-        if not self.client:
+        client = self._get_client()
+        if not client:
             return []
         try:
-            response = await self.client.models.list()
+            response = await client.models.list()
             models = []
             for m in response.data:
                 if any(prefix in m.id for prefix in ["gpt-4", "gpt-3.5", "o1", "o3", "o4"]):
