@@ -9,7 +9,12 @@ const PROVIDERS = [
 ];
 
 export default function ResponseTabs() {
-  const { responses, activeProvider, setActiveProvider } = useChatStore();
+  const { responses, activeProvider, setActiveProvider, enabledProviders } =
+    useChatStore();
+
+  const visibleProviders = PROVIDERS.filter(
+    ({ id }) => enabledProviders[id] !== false
+  );
 
   const statusIcon = (status: string) => {
     switch (status) {
@@ -27,7 +32,7 @@ export default function ResponseTabs() {
   return (
     <div className="flex flex-col h-full">
       <div className="flex border-b border-gray-700">
-        {PROVIDERS.map(({ id, label, color }) => (
+        {visibleProviders.map(({ id, label, color }) => (
           <button
             key={id}
             onClick={() => setActiveProvider(id)}

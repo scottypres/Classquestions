@@ -19,7 +19,11 @@ function extractShortAnswer(content: string): string {
 }
 
 export default function ClassQuestionsSummary() {
-  const { responses } = useChatStore();
+  const { responses, enabledProviders } = useChatStore();
+
+  const visibleProviders = PROVIDERS.filter(
+    ({ id }) => enabledProviders[id] !== false
+  );
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   const hasContent = Object.values(responses).some((r) => r.content);
@@ -29,7 +33,7 @@ export default function ClassQuestionsSummary() {
     <div className="border border-gray-700 rounded-lg mx-4 mt-3 bg-gray-800/60">
       <div className="flex items-center gap-1 px-3 py-2 border-b border-gray-700">
         <span className="text-xs font-semibold text-gray-400 mr-2">Quick Answers:</span>
-        {PROVIDERS.map(({ id, label, color }) => (
+        {visibleProviders.map(({ id, label, color }) => (
           <span
             key={id}
             className={`${color} text-white text-sm font-bold px-3 py-1 rounded-full`}
@@ -39,7 +43,7 @@ export default function ClassQuestionsSummary() {
         ))}
       </div>
       <div className="divide-y divide-gray-700">
-        {PROVIDERS.map(({ id, label }) => (
+        {visibleProviders.map(({ id, label }) => (
           <div key={id}>
             <button
               onClick={() =>

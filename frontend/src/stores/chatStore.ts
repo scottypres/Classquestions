@@ -9,6 +9,7 @@ interface ChatState {
   viewMode: ViewMode;
   classQuestionsMode: boolean;
   selectedModels: Record<string, string>;
+  enabledProviders: Record<string, boolean>;
   uploadedFiles: UploadedFile[];
   isQuerying: boolean;
   currentPrompt: string;
@@ -22,6 +23,7 @@ interface ChatState {
   setViewMode: (mode: ViewMode) => void;
   setClassQuestionsMode: (on: boolean) => void;
   setSelectedModel: (provider: string, model: string) => void;
+  toggleProvider: (provider: string) => void;
   setUploadedFiles: (files: UploadedFile[]) => void;
   addUploadedFile: (file: UploadedFile) => void;
   removeUploadedFile: (id: string) => void;
@@ -44,6 +46,7 @@ export const useChatStore = create<ChatState>((set) => ({
   viewMode: 'tabs',
   classQuestionsMode: false,
   selectedModels: {},
+  enabledProviders: { gemini: true, claude: true, chatgpt: true },
   uploadedFiles: [],
   isQuerying: false,
   currentPrompt: '',
@@ -75,6 +78,21 @@ export const useChatStore = create<ChatState>((set) => ({
     set((state) => ({
       selectedModels: { ...state.selectedModels, [provider]: model },
     })),
+  toggleProvider: (provider) =>
+    set((state) => {
+      const newEnabled = {
+        ...state.enabledProviders,
+        [provider]: !state.enabledProviders[provider],
+      };
+      // Ensure at least one provider stays enabled
+      if (!Object.values(newEnabled).some(Boolean)) return state;
+      // If active provider got disabled, switch to first enabled
+      let newActive = state.activeProvider;
+      if (!newEnabled[newActive]) {
+        newActive = PROVIDERS.find((p) => newEnabled[p]) || 'gemini';
+      }
+      return { enabledProviders: newEnabled, activeProvider: newActive };
+    }),
   setUploadedFiles: (files) => set({ uploadedFiles: files }),
   addUploadedFile: (file) =>
     set((state) => ({ uploadedFiles: [...state.uploadedFiles, file] })),

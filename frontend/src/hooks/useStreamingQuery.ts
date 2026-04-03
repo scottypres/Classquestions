@@ -8,6 +8,7 @@ export function useStreamingQuery() {
     selectedModels,
     uploadedFiles,
     classQuestionsMode,
+    enabledProviders,
     setResponse,
     appendContent,
     resetResponses,
@@ -15,7 +16,12 @@ export function useStreamingQuery() {
   } = useChatStore();
 
   const send = useCallback(
-    (prompt: string, providers: string[] = ['gemini', 'claude', 'chatgpt']) => {
+    (prompt: string) => {
+      const providers = ['gemini', 'claude', 'chatgpt'].filter(
+        (p) => enabledProviders[p]
+      );
+      if (providers.length === 0) return;
+
       resetResponses();
       setIsQuerying(true);
 
@@ -58,7 +64,7 @@ export function useStreamingQuery() {
         }
       );
     },
-    [selectedModels, uploadedFiles, classQuestionsMode, setResponse, appendContent, resetResponses, setIsQuerying]
+    [selectedModels, uploadedFiles, classQuestionsMode, enabledProviders, setResponse, appendContent, resetResponses, setIsQuerying]
   );
 
   const cancel = useCallback(() => {

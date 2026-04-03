@@ -10,11 +10,15 @@ const PANELS = [
 ];
 
 export default function SplitView() {
-  const { responses } = useChatStore();
+  const { responses, enabledProviders } = useChatStore();
+
+  const visiblePanels = PANELS.filter(
+    ({ id }) => enabledProviders[id] !== false
+  );
 
   return (
     <Group orientation="vertical" className="h-full">
-      {PANELS.map(({ id, label, color }, idx) => (
+      {visiblePanels.map(({ id, label, color }, idx) => (
         <Fragment key={id}>
           {idx > 0 && (
             <Separator className="h-1.5 bg-gray-700 hover:bg-gray-500 transition-colors cursor-row-resize" />
