@@ -42,10 +42,11 @@ class GeminiService(LLMService):
         contents.append(types.Part.from_text(text=prompt))
 
         try:
-            async for chunk in client.aio.models.generate_content_stream(
+            stream = await client.aio.models.generate_content_stream(
                 model=model,
                 contents=contents,
-            ):
+            )
+            async for chunk in stream:
                 if chunk.text:
                     yield chunk.text
         except Exception as e:
