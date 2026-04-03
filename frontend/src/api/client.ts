@@ -3,8 +3,13 @@ import type { Chat, UploadedFile } from '../types';
 const BASE = import.meta.env.DEV ? '/api' : '/_/backend/api';
 
 export async function fetchChats(): Promise<Chat[]> {
-  const res = await fetch(`${BASE}/chats`);
-  return res.json();
+  try {
+    const res = await fetch(`${BASE}/chats`);
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
 }
 
 export async function createChat(name: string = 'New Chat'): Promise<Chat> {
@@ -38,17 +43,26 @@ export async function saveMessages(
   chatId: string,
   messages: { role: string; provider?: string; content: string; model?: string }[]
 ) {
-  const res = await fetch(`${BASE}/chats/${chatId}/messages`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(messages),
-  });
-  return res.json();
+  try {
+    const res = await fetch(`${BASE}/chats/${chatId}/messages`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(messages),
+    });
+    return res.json();
+  } catch {
+    return [];
+  }
 }
 
 export async function fetchModels(provider: string) {
-  const res = await fetch(`${BASE}/models/${provider}`);
-  return res.json();
+  try {
+    const res = await fetch(`${BASE}/models/${provider}`);
+    if (!res.ok) return { provider, models: [] };
+    return res.json();
+  } catch {
+    return { provider, models: [] };
+  }
 }
 
 export async function uploadFile(file: File, chatId?: string): Promise<UploadedFile> {
@@ -95,6 +109,11 @@ export function streamQuery(
     signal: controller.signal,
   })
     .then(async (response) => {
+      if (!response.ok) {
+        const text = await response.text();
+        providers.forEach((p) => callbacks.onError(p, `Server error: ${response.status} ${text}`));
+        return;
+      }
       const reader = response.body?.getReader();
       if (!reader) return;
       const decoder = new TextDecoder();

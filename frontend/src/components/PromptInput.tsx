@@ -2,8 +2,7 @@ import { useState, useCallback, type KeyboardEvent } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useChatStore } from '../stores/chatStore';
 import { useStreamingQuery } from '../hooks/useStreamingQuery';
-import { useChats } from '../hooks/useChats';
-import { uploadFile, saveMessages } from '../api/client';
+import { uploadFile, saveMessages, createChat as apiCreateChat } from '../api/client';
 import { Send, Paperclip, X, StopCircle } from 'lucide-react';
 
 export default function PromptInput() {
@@ -17,7 +16,7 @@ export default function PromptInput() {
     activeChatId,
   } = useChatStore();
   const { send, cancel } = useStreamingQuery();
-  const { create } = useChats();
+  const { setChats, chats } = useChatStore();
 
   const onDrop = useCallback(
     async (files: File[]) => {
@@ -41,8 +40,15 @@ export default function PromptInput() {
 
     let chatId = activeChatId;
     if (!chatId) {
-      const chat = await create(prompt.slice(0, 50));
-      chatId = chat.id;
+      try {
+        const chat = await apiCreateChat(prompt.slice(0, 50));
+        chatId = chat.id;
+        useChatStore.getState().setActiveChatId(chat.id);
+        setChats([chat, ...chats]);
+      } catch {
+        // Continue without persistence if backend is down
+        chatId = crypto.randomUUID();
+      }
     }
 
     setText('');
