@@ -1,6 +1,6 @@
 import type { Chat, UploadedFile } from '../types';
 
-const BASE = '/api';
+const BASE = import.meta.env.DEV ? '/api' : '/_/backend/api';
 
 export async function fetchChats(): Promise<Chat[]> {
   const res = await fetch(`${BASE}/chats`);
