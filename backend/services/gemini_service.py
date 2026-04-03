@@ -1,7 +1,7 @@
 from typing import AsyncGenerator
 from services.llm_base import LLMService
 
-DEFAULT_MODEL = "gemini-2.0-flash"
+DEFAULT_MODEL = "gemini-2.5-flash-preview-05-20"
 
 
 class GeminiService(LLMService):
@@ -66,7 +66,6 @@ class GeminiService(LLMService):
             return sorted(models, key=lambda x: x["name"])
         except Exception:
             return [
-                {"id": "gemini-2.0-flash", "name": "Gemini 2.0 Flash"},
+                {"id": "gemini-2.5-flash-preview-05-20", "name": "Gemini 2.5 Flash"},
                 {"id": "gemini-2.5-pro-preview-05-06", "name": "Gemini 2.5 Pro"},
-                {"id": "gemini-2.5-flash-preview-04-17", "name": "Gemini 2.5 Flash"},
             ]
